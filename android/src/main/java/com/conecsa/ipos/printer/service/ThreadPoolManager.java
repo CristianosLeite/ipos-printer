@@ -1,10 +1,10 @@
-package com.conecsa.provahidrica;
+package com.conecsa.ipos.printer.service;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ThreadPoolManager {
-  private ExecutorService service;
+  private final ExecutorService service;
 
   private ThreadPoolManager() {
     int num = Runtime.getRuntime().availableProcessors() * 20;

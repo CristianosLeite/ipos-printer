@@ -33,6 +33,17 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    buildFeatures {
+        aidl true
+    }
+
+    namespace 'com.conecsa.ipos.printer.service'
+
+    sourceSets {
+        main {
+            aidl.srcDirs = ['src/main/aidl']
+        }
+    }
     lintOptions {
         abortOnError false
     }

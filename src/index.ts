@@ -1,10 +1,10 @@
 import { registerPlugin } from '@capacitor/core';
 
-import type { IposPrinterPlugin } from './definitions';
+import type { IPosPrinterPlugin } from './definitions';
 
-const IposPrinter = registerPlugin<IposPrinterPlugin>('IposPrinter', {
-  web: () => import('./web').then((m) => new m.IposPrinterWeb()),
+const IPosPrinter = registerPlugin<IPosPrinterPlugin>('IPosPrinter', {
+  web: () => import('./web').then((m) => new m.IPosPrinterWeb()),
 });
 
 export * from './definitions';
-export { IposPrinter };
+export { IPosPrinter };
