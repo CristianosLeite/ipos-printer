@@ -1,7 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <application>
-        <service android:name=".IPosPrinter" android:process=":remote"/>
-        <service android:name=".IPosPrinterService" android:process=":remote"/>
+        <service android:name="com.conecsa.ipos.printer.service.IPosPrinter" android:process=":remote"/>
+        <service android:name="com.conecsa.ipos.printer.service.IPosPrinterService" android:exported="true" android:process=":remote"
+            tools:ignore="Instantiatable" />
     </application>
 </manifest>

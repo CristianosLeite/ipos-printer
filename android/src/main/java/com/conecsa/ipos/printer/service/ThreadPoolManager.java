@@ -2,6 +2,7 @@ package com.conecsa.ipos.printer.service;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class ThreadPoolManager {
   private final ExecutorService service;
@@ -19,5 +20,9 @@ public class ThreadPoolManager {
 
   public void executeTask(Runnable runnable) {
     service.execute(runnable);
+  }
+
+  public Future<?> submitTask(Runnable task) {
+    return service.submit(task);
   }
 }
