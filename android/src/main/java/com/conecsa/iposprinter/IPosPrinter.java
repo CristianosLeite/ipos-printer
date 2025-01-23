@@ -1,4 +1,4 @@
-package com.conecsa.ipos.printer.service;
+package com.conecsa.iposprinter;
 
 import android.app.Service;
 import android.content.ComponentName;
@@ -12,7 +12,6 @@ import android.util.Log;
 
 import com.iposprinter.iposprinterservice.IPosPrinterCallback;
 import com.iposprinter.iposprinterservice.IPosPrinterService;
-
 
 public class IPosPrinter extends Service implements IPosPrinterService {
   private final String TAG = "IPosPrinter";

@@ -1,4 +1,4 @@
-package com.conecsa.ipos.printer.service;
+package com.conecsa.iposprinter;
 
 import android.os.RemoteException;
 import android.util.Log;

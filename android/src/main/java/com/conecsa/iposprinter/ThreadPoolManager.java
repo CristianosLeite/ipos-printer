@@ -1,4 +1,4 @@
-package com.conecsa.ipos.printer.service;
+package com.conecsa.iposprinter;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
