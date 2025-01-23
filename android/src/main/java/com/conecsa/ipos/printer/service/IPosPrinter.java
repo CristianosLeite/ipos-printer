@@ -10,27 +10,14 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.Future;
+import com.iposprinter.iposprinterservice.IPosPrinterCallback;
+import com.iposprinter.iposprinterservice.IPosPrinterService;
 
-public class IPosPrinter extends Service {
+
+public class IPosPrinter extends Service implements IPosPrinterService {
   private final String TAG = "IPosPrinter";
   private IPosPrinterService mIPosPrinterService;
-  private static final long TIMEOUT_SECONDS = 10;
-
-  private void executeTransactWithTimeout(Runnable task) throws TimeoutException {
-    Future<?> future = ThreadPoolManager.getInstance().submitTask(task);
-    try {
-      future.get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
-    } catch (TimeoutException e) {
-      future.cancel(true);
-      throw new TimeoutException("Transact operation timed out");
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
+  private IPosPrinterCallback callback;
 
   @Override
   public void onCreate() {
@@ -46,8 +33,11 @@ public class IPosPrinter extends Service {
 
   @Override
   public IBinder onBind(Intent intent) {
-    mIPosPrinterService = IPosPrinterService.Stub.asInterface(mBinder);
-    return mBinder;
+    return mIPosPrinterService.asBinder();
+  }
+
+  public void setCallback(IPosPrinterCallback callback) {
+    this.callback = callback;
   }
 
   private final ServiceConnection connectService = new ServiceConnection() {
@@ -56,7 +46,13 @@ public class IPosPrinter extends Service {
     public void onServiceConnected(ComponentName name, IBinder service) {
       mIPosPrinterService = IPosPrinterService.Stub.asInterface(service);
       Log.i(TAG, "Service connected");
-      Log.i(TAG, "binder: " + service);
+
+        try {
+            printerInit(callback);
+            Log.i(TAG, "Printer initialized");
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -74,13 +70,10 @@ public class IPosPrinter extends Service {
       }
 
       Intent intent = new Intent();
-      String packageName = context.getApplicationContext().getPackageName();
-      String cls = "com.conecsa.ipos.printer.service.IPosPrinter";
-      intent.setComponent(new ComponentName(packageName, cls));
+      intent.setPackage("com.iposprinter.iposprinterservice");
 
       Log.d(TAG, "Attempting to bind to service with intent: " + intent.getPackage());
 
-      context.startService(intent);
       boolean bound = context.bindService(intent, connectService, Context.BIND_AUTO_CREATE);
       if (!bound) {
         Log.e(TAG, "Failed to bind to service");
@@ -93,180 +86,206 @@ public class IPosPrinter extends Service {
     }
   }
 
-  public final IPosPrinterService.Stub mBinder = new IPosPrinterService.Stub() {
-    @Override
-    public void printerInit(IPosPrinterCallback callback) {
-      android.os.Parcel _data = android.os.Parcel.obtain();
-      android.os.Parcel _reply = android.os.Parcel.obtain();
-      ThreadPoolManager.getInstance().executeTask(() -> {
-        try {
-          _data.writeInterfaceToken(DESCRIPTOR);
-          _data.writeStrongInterface(callback);
-//            try {
-//                boolean _status = transact(Stub.TRANSACTION_printerInit, _data, _reply, 0);
-//            } catch (RemoteException e) {
-//                throw new RuntimeException(e);
-//            }
-            _reply.readException();
-        }  finally {
-          _reply.recycle();
-          _data.recycle();
-        }
-      });
-    }
+  /**
+   * Encapsulates the operation that throws RemoteException.
+   * */
+  @FunctionalInterface
+  private interface AsyncPrinterOperation {
+    void execute() throws RemoteException;
+  }
 
-    @Override
-    public void printText(String text, IPosPrinterCallback callback) {
-      android.os.Parcel _data = android.os.Parcel.obtain();
-      android.os.Parcel _reply = android.os.Parcel.obtain();
+  /**
+   * Calls the interface inside the ThreadPoolManager.
+   * @param operation
+   */
+  private void runAsyncPrinterOperation(AsyncPrinterOperation operation) {
+    if (!isServiceConnected()) { return; }
+    ThreadPoolManager.getInstance().executeTask(() -> {
       try {
-        executeTransactWithTimeout(() -> {
-          try {
-            _data.writeInterfaceToken(DESCRIPTOR);
-            _data.writeString(text);
-            _data.writeStrongInterface(callback);
-            //boolean _status = transact(Stub.TRANSACTION_printText, _data, _reply, 0);
-              try {
-                  callback.onRunResult(true);
-              } catch (RemoteException e) {
-                  throw new RuntimeException(e);
-              }
-              _reply.readException();
-            Log.i(TAG, "printText: " + text);
-//          } catch (RemoteException e) {
-//            throw new RuntimeException(e);
-          } finally {
-            _reply.recycle();
-            _data.recycle();
-          }
-        });
-      } catch (TimeoutException e) {
-        Log.e(TAG, "printText operation timed out", e);
+        operation.execute();
+      } catch (RemoteException e) {
+        Log.e(TAG, "Falha na impressão", e);
       }
+    });
+  }
+
+  /**
+   * <h5>Check if proxy service is connected.
+   * <p>Avoid null pointer reference.
+   * @return boolean
+   */
+  private boolean isServiceConnected() {
+    if (mIPosPrinterService == null) {
+      Log.e(TAG, "mIPosPrinterService is null");
+      return false;
     }
+    return true;
+  }
 
+  @Override
+  public int getPrinterStatus() throws RemoteException {
+    if (! isServiceConnected()) { return 6; } // Return a status different from the printer default values
+    return mIPosPrinterService.getPrinterStatus();
+  }
 
-    @Override
-    public int getPrinterStatus() {
-      android.os.Parcel _data = android.os.Parcel.obtain();
-      android.os.Parcel _reply = android.os.Parcel.obtain();
-      AtomicInteger _result = new AtomicInteger();
-      try {
-        executeTransactWithTimeout(() -> {
-          try {
-            _data.writeInterfaceToken(DESCRIPTOR);
-            //boolean _status = transact(Stub.TRANSACTION_getPrinterStatus, _data, _reply, 0);
-            _reply.readException();
-            _result.set(_reply.readInt());
-//          } catch (RemoteException e) {
-//            throw new RuntimeException(e);
-          } finally {
-            _reply.recycle();
-            _data.recycle();
-          }
-        });
-      } catch (TimeoutException e) {
-        Log.e(TAG, "getPrinterStatus operation timed out", e);
-      }
-      return _result.get();
-    }
+  @Override
+  public void printerInit(IPosPrinterCallback callback) throws RemoteException {
+    if (! isServiceConnected()) { return; }
+    runAsyncPrinterOperation(() -> {
+      mIPosPrinterService.printerInit(callback);
+      Log.i(TAG, "Printer initialized");
+    });
+  }
 
-    @Override
-    public void setPrinterPrintDepth(int depth, IPosPrinterCallback callback) throws RemoteException {
+  @Override
+  public void setPrinterPrintDepth(int depth, IPosPrinterCallback callback) {
+    if (isServiceConnected()) { return; }
+    runAsyncPrinterOperation(() -> {
+      mIPosPrinterService.setPrinterPrintDepth(depth, callback);
+      Log.i(TAG, "Printer print depth set to: " + depth);
+    });
+  }
 
-    }
+  @Override
+  public void setPrinterPrintFontType(String typeface, IPosPrinterCallback callback) {
+    if (! isServiceConnected()) { return; }
+    runAsyncPrinterOperation(() -> {
+      mIPosPrinterService.setPrinterPrintFontType(typeface, callback);
+      Log.i(TAG, "Printer print font type set to: " + typeface);
+    });
+  }
 
-    @Override
-    public void setPrinterPrintFontType(String typeface, IPosPrinterCallback callback) throws RemoteException {
+  @Override
+  public void setPrinterPrintFontSize(int fontsize, IPosPrinterCallback callback) {
+    if (! isServiceConnected()) { return; }
+    runAsyncPrinterOperation(() -> {
+      mIPosPrinterService.setPrinterPrintFontSize(fontsize, callback);
+      Log.i(TAG, "Printer print font size set to: " + fontsize);
+    });
+  }
 
-    }
+  @Override
+  public void setPrinterPrintAlignment(int alignment, IPosPrinterCallback callback) {
+    if (! isServiceConnected()) { return; }
+    runAsyncPrinterOperation(() -> {
+      mIPosPrinterService.setPrinterPrintAlignment(alignment, callback);
+      Log.i(TAG, "Printer print alignment set to: " + alignment);
+    });
+  }
 
-    @Override
-    public void setPrinterPrintFontSize(int fontsize, IPosPrinterCallback callback) throws RemoteException {
+  @Override
+  public void printerFeedLines(int lines, IPosPrinterCallback callback) {
+    if (! isServiceConnected()) { return; }
+    runAsyncPrinterOperation(() -> {
+      mIPosPrinterService.printerFeedLines(lines, callback);
+      Log.i(TAG, "Printer feed lines: " + lines);
+    });
+  }
 
-    }
+  @Override
+  public void printBlankLines(int lines, int height, IPosPrinterCallback callback) {
+    if (! isServiceConnected()) { return; }
+    runAsyncPrinterOperation(() -> {
+      mIPosPrinterService.printBlankLines(lines, height, callback);
+      Log.i(TAG, "Printed blank lines: " + lines);
+    });
+  }
 
-    @Override
-    public void setPrinterPrintAlignment(int alignment, IPosPrinterCallback callback) throws RemoteException {
+  @Override
+  public void printText(String text, IPosPrinterCallback callback) {
+    runAsyncPrinterOperation(() -> {
+      mIPosPrinterService.printText(text, callback);
+      mIPosPrinterService.printerPerformPrint(160, callback);
+      Log.i(TAG, "Sent text to printer");
+      Log.i(TAG, "Text: " + text);
+    });
+  }
 
-    }
+  @Override
+  public void printSpecifiedTypeText(String text, String typeface, int fontsize, IPosPrinterCallback callback) {
+    if (! isServiceConnected()) { return; }
+    runAsyncPrinterOperation(() -> {
+      mIPosPrinterService.printSpecifiedTypeText(text, typeface, fontsize, callback);
+      Log.i(TAG, "Sent specified type text to printer");
+      Log.i(TAG, "Text: " + text);
+    });
+  }
 
-    @Override
-    public void printerFeedLines(int lines, IPosPrinterCallback callback) throws RemoteException {
+  @Override
+  public void PrintSpecFormatText(String text, String typeface, int fontsize, int alignment, IPosPrinterCallback callback) {
+    if (! isServiceConnected()) { return; }
+    runAsyncPrinterOperation(() -> {
+      mIPosPrinterService.PrintSpecFormatText(text, typeface, fontsize, alignment, callback);
+      Log.i(TAG, "Sent specified format text to printer");
+      Log.i(TAG, "Text: " + text);
+    });
+  }
 
-    }
+  @Override
+  public void printColumnsText(String[] colsTextArr, int[] colsWidthArr, int[] colsAlign, int isContinuousPrint, IPosPrinterCallback callback) {
+    if (! isServiceConnected()) { return; }
+    runAsyncPrinterOperation(() -> {
+      mIPosPrinterService.printColumnsText(colsTextArr, colsWidthArr, colsAlign, isContinuousPrint, callback);
+      Log.i(TAG, "Sent columns text to printer");
+    });
+  }
 
-    @Override
-    public void printBlankLines(int lines, int height, IPosPrinterCallback callback) throws RemoteException {
+  @Override
+  public void printBitmap(int alignment, int bitmapSize, Bitmap mBitmap, IPosPrinterCallback callback) {
+    if (! isServiceConnected()) { return; }
+    runAsyncPrinterOperation(() -> {
+      mIPosPrinterService.printBitmap(alignment, bitmapSize, mBitmap, callback);
+      Log.i(TAG, "Sent bitmap to printer");
+    });
+  }
 
-    }
+  @Override
+  public void printBarCode(String data, int symbology, int height, int width, int textposition, IPosPrinterCallback callback) {
+    if (! isServiceConnected()) { return; }
+    runAsyncPrinterOperation(() -> {
+      mIPosPrinterService.printBarCode(data, symbology, height, width, textposition, callback);
+      Log.i(TAG, "Sent barcode to printer");
+    });
+  }
 
-    @Override
-    public void printSpecifiedTypeText(String text, String typeface, int fontsize, IPosPrinterCallback callback) throws RemoteException {
+  @Override
+  public void printQRCode(String data, int modulesize, int mErrorCorrectionLevel, IPosPrinterCallback callback) {
+    if (! isServiceConnected()) { return; }
+    runAsyncPrinterOperation(() -> {
+      mIPosPrinterService.printQRCode(data, modulesize, mErrorCorrectionLevel, callback);
+      Log.i(TAG, "Sent QR code to printer");
+    });
+  }
 
-    }
+  @Override
+  public void printRawData(byte[] rawPrintData, IPosPrinterCallback callback) {
+    if (! isServiceConnected()) { return; }
+    runAsyncPrinterOperation(() -> {
+      mIPosPrinterService.printRawData(rawPrintData, callback);
+      Log.i(TAG, "Sent raw data to printer");
+    });
+  }
 
-    @Override
-    public void PrintSpecFormatText(String text, String typeface, int fontsize, int alignment, IPosPrinterCallback callback) throws RemoteException {
+  @Override
+  public void sendUserCMDData(byte[] data, IPosPrinterCallback callback) {
+    if (! isServiceConnected()) { return; }
+    runAsyncPrinterOperation(() -> {
+      mIPosPrinterService.sendUserCMDData(data, callback);
+      Log.i(TAG, "Sent user command data to printer");
+    });
+  }
 
-    }
+  @Override
+  public void printerPerformPrint(int feedlines, IPosPrinterCallback callback) {
+    if (! isServiceConnected()) { return; }
+    runAsyncPrinterOperation(() -> {
+      mIPosPrinterService.printerPerformPrint(feedlines, callback);
+      Log.i(TAG, "Performed print");
+    });
+  }
 
-    @Override
-    public void printColumnsText(String[] colsTextArr, int[] colsWidthArr, int[] colsAlign, int isContinuousPrint, IPosPrinterCallback callback) throws RemoteException {
-
-    }
-
-    @Override
-    public void printBitmap(int alignment, int bitmapSize, Bitmap mBitmap, IPosPrinterCallback callback) throws RemoteException {
-
-    }
-
-    @Override
-    public void printBarCode(String data, int symbology, int height, int width, int textposition, IPosPrinterCallback callback) throws RemoteException {
-
-    }
-
-    @Override
-    public void printQRCode(String data, int modulesize, int mErrorCorrectionLevel, IPosPrinterCallback callback) throws RemoteException {
-
-    }
-
-    @Override
-    public void printRawData(byte[] rawPrintData, IPosPrinterCallback callback) throws RemoteException {
-
-    }
-
-    @Override
-    public void sendUserCMDData(byte[] data, IPosPrinterCallback callback) throws RemoteException {
-
-    }
-
-    @Override
-    public void printerPerformPrint(int feedlines, IPosPrinterCallback callback) {
-      android.os.Parcel _data = android.os.Parcel.obtain();
-      android.os.Parcel _reply = android.os.Parcel.obtain();
-      ThreadPoolManager.getInstance().executeTask(() -> {
-        try {
-          _data.writeInterfaceToken(DESCRIPTOR);
-          _data.writeInt(feedlines);
-          _data.writeStrongInterface(callback);
-            try {
-                boolean _status = transact(Stub.TRANSACTION_printerPerformPrint, _data, _reply, 0);
-            } catch (RemoteException e) {
-                throw new RuntimeException(e);
-            }
-            _reply.readException();
-        }
-        finally {
-          _reply.recycle();
-          _data.recycle();
-        }
-      });
-    }
-
-    @Override
-    public IBinder asBinder() {
-      return mBinder;
-    }
-  };
+  @Override
+  public IBinder asBinder() {
+    return null;
+  }
 }

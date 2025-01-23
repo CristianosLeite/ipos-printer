@@ -1,5 +1,5 @@
-package com.conecsa.ipos.printer.service;
-import  com.conecsa.ipos.printer.service.IPosPrinterCallback;
+package com.iposprinter.iposprinterservice;
+import  com.iposprinter.iposprinterservice.IPosPrinterCallback;
 import  android.graphics.Bitmap;
 
 interface IPosPrinterService {

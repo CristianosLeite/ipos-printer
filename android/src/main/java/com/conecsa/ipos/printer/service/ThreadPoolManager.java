@@ -25,4 +25,8 @@ public class ThreadPoolManager {
   public Future<?> submitTask(Runnable task) {
     return service.submit(task);
   }
+
+  /**
+   * Create a task to run the command in the background.
+   */
 }

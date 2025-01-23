@@ -1,4 +1,4 @@
-package com.conecsa.ipos.printer.service;
+package com.iposprinter.iposprinterservice;
 
 interface IPosPrinterCallback {
 	oneway void onRunResult(boolean isSuccess);
