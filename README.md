@@ -39,10 +39,10 @@ npx cap sync
 ### getPrinterStatus()
 
 ```typescript
-getPrinterStatus() => Promise<{ status: number; }>
+getPrinterStatus() => Promise<{ result: number; }>
 ```
 
-**Returns:** <code>Promise&lt;{ status: number; }&gt;</code>
+**Returns:** <code>Promise&lt;{ result: number; }&gt;</code>
 
 --------------------
 
@@ -50,14 +50,14 @@ getPrinterStatus() => Promise<{ status: number; }>
 ### getPrinterStatusMessage(...)
 
 ```typescript
-getPrinterStatusMessage(options: { value: number; }) => Promise<{ value: string; }>
+getPrinterStatusMessage(options: { value: number; }) => Promise<{ result: string; }>
 ```
 
 | Param         | Type                            |
 | ------------- | ------------------------------- |
 | **`options`** | <code>{ value: number; }</code> |
 
-**Returns:** <code>Promise&lt;{ value: string; }&gt;</code>
+**Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 
 --------------------
 
@@ -65,12 +65,14 @@ getPrinterStatusMessage(options: { value: number; }) => Promise<{ value: string;
 ### setPrinterPrintDepth(...)
 
 ```typescript
-setPrinterPrintDepth(options: { depth: number; }) => Promise<void>
+setPrinterPrintDepth(options: { depth: number; }) => Promise<{ result: string; }>
 ```
 
 | Param         | Type                            |
 | ------------- | ------------------------------- |
 | **`options`** | <code>{ depth: number; }</code> |
+
+**Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 
 --------------------
 
@@ -78,12 +80,14 @@ setPrinterPrintDepth(options: { depth: number; }) => Promise<void>
 ### setPrinterPrintFontType(...)
 
 ```typescript
-setPrinterPrintFontType(options: { typeface: string; }) => Promise<void>
+setPrinterPrintFontType(options: { typeface: string; }) => Promise<{ result: string; }>
 ```
 
 | Param         | Type                               |
 | ------------- | ---------------------------------- |
 | **`options`** | <code>{ typeface: string; }</code> |
+
+**Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 
 --------------------
 
@@ -91,12 +95,14 @@ setPrinterPrintFontType(options: { typeface: string; }) => Promise<void>
 ### setPrinterPrintFontSize(...)
 
 ```typescript
-setPrinterPrintFontSize(options: { fontSize: number; }) => Promise<void>
+setPrinterPrintFontSize(options: { fontSize: number; }) => Promise<{ result: string; }>
 ```
 
 | Param         | Type                               |
 | ------------- | ---------------------------------- |
 | **`options`** | <code>{ fontSize: number; }</code> |
+
+**Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 
 --------------------
 
@@ -104,12 +110,14 @@ setPrinterPrintFontSize(options: { fontSize: number; }) => Promise<void>
 ### setPrinterPrintAlignment(...)
 
 ```typescript
-setPrinterPrintAlignment(options: { alignment: number; }) => Promise<void>
+setPrinterPrintAlignment(options: { alignment: number; }) => Promise<{ result: string; }>
 ```
 
 | Param         | Type                                |
 | ------------- | ----------------------------------- |
 | **`options`** | <code>{ alignment: number; }</code> |
+
+**Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 
 --------------------
 
@@ -117,12 +125,14 @@ setPrinterPrintAlignment(options: { alignment: number; }) => Promise<void>
 ### printerFeedLines(...)
 
 ```typescript
-printerFeedLines(options: { lines: number; }) => Promise<void>
+printerFeedLines(options: { lines: number; }) => Promise<{ result: string; }>
 ```
 
 | Param         | Type                            |
 | ------------- | ------------------------------- |
 | **`options`** | <code>{ lines: number; }</code> |
+
+**Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 
 --------------------
 
@@ -130,12 +140,14 @@ printerFeedLines(options: { lines: number; }) => Promise<void>
 ### printBlankLines(...)
 
 ```typescript
-printBlankLines(options: { lines: number; }) => Promise<void>
+printBlankLines(options: { lines: number; }) => Promise<{ result: string; }>
 ```
 
 | Param         | Type                            |
 | ------------- | ------------------------------- |
 | **`options`** | <code>{ lines: number; }</code> |
+
+**Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 
 --------------------
 
@@ -143,12 +155,14 @@ printBlankLines(options: { lines: number; }) => Promise<void>
 ### printText(...)
 
 ```typescript
-printText(options: { text: string; }) => Promise<void>
+printText(options: { text: string; }) => Promise<{ result: string; }>
 ```
 
 | Param         | Type                           |
 | ------------- | ------------------------------ |
 | **`options`** | <code>{ text: string; }</code> |
+
+**Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 
 --------------------
 
@@ -156,12 +170,14 @@ printText(options: { text: string; }) => Promise<void>
 ### printSpecifiedTypeText(...)
 
 ```typescript
-printSpecifiedTypeText(options: { text: string; typeface: string; fontSize: number; }) => Promise<void>
+printSpecifiedTypeText(options: { text: string; typeface: string; fontSize: number; }) => Promise<{ result: string; }>
 ```
 
 | Param         | Type                                                               |
 | ------------- | ------------------------------------------------------------------ |
 | **`options`** | <code>{ text: string; typeface: string; fontSize: number; }</code> |
+
+**Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 
 --------------------
 
@@ -169,12 +185,14 @@ printSpecifiedTypeText(options: { text: string; typeface: string; fontSize: numb
 ### PrintSpecFormatText(...)
 
 ```typescript
-PrintSpecFormatText(options: { text: string; typeface: string; fontSize: number; alignment: number; }) => Promise<void>
+PrintSpecFormatText(options: { text: string; typeface: string; fontSize: number; alignment: number; }) => Promise<{ result: string; }>
 ```
 
 | Param         | Type                                                                                  |
 | ------------- | ------------------------------------------------------------------------------------- |
 | **`options`** | <code>{ text: string; typeface: string; fontSize: number; alignment: number; }</code> |
+
+**Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 
 --------------------
 
@@ -182,12 +200,14 @@ PrintSpecFormatText(options: { text: string; typeface: string; fontSize: number;
 ### printColumnsText(...)
 
 ```typescript
-printColumnsText(options: { colsTextArr: string[]; colsWidthArr: number[]; colsAlign: number[]; }) => Promise<void>
+printColumnsText(options: { colsTextArr: string[]; colsWidthArr: number[]; colsAlign: number[]; }) => Promise<{ result: string; }>
 ```
 
 | Param         | Type                                                                                 |
 | ------------- | ------------------------------------------------------------------------------------ |
 | **`options`** | <code>{ colsTextArr: string[]; colsWidthArr: number[]; colsAlign: number[]; }</code> |
+
+**Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 
 --------------------
 
@@ -195,12 +215,14 @@ printColumnsText(options: { colsTextArr: string[]; colsWidthArr: number[]; colsA
 ### printBitmap(...)
 
 ```typescript
-printBitmap(options: { alignment: number; bitmapSize: number; base64: string; }) => Promise<void>
+printBitmap(options: { alignment: number; bitmapSize: number; base64: string; }) => Promise<{ result: string; }>
 ```
 
 | Param         | Type                                                                    |
 | ------------- | ----------------------------------------------------------------------- |
 | **`options`** | <code>{ alignment: number; bitmapSize: number; base64: string; }</code> |
+
+**Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 
 --------------------
 
@@ -208,12 +230,14 @@ printBitmap(options: { alignment: number; bitmapSize: number; base64: string; })
 ### printBarCode(...)
 
 ```typescript
-printBarCode(options: { data: string; symbology: number; height: number; width: number; textPosition: number; }) => Promise<void>
+printBarCode(options: { data: string; symbology: number; height: number; width: number; textPosition: number; }) => Promise<{ result: string; }>
 ```
 
 | Param         | Type                                                                                                   |
 | ------------- | ------------------------------------------------------------------------------------------------------ |
 | **`options`** | <code>{ data: string; symbology: number; height: number; width: number; textPosition: number; }</code> |
+
+**Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 
 --------------------
 
@@ -221,12 +245,14 @@ printBarCode(options: { data: string; symbology: number; height: number; width: 
 ### printQRCode(...)
 
 ```typescript
-printQRCode(options: { data: string; moduleSize: number; errorLevel: number; }) => Promise<void>
+printQRCode(options: { data: string; moduleSize: number; errorLevel: number; }) => Promise<{ result: string; }>
 ```
 
 | Param         | Type                                                                   |
 | ------------- | ---------------------------------------------------------------------- |
 | **`options`** | <code>{ data: string; moduleSize: number; errorLevel: number; }</code> |
+
+**Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 
 --------------------
 
@@ -234,12 +260,14 @@ printQRCode(options: { data: string; moduleSize: number; errorLevel: number; }) 
 ### printRawData(...)
 
 ```typescript
-printRawData(options: { data: string; }) => Promise<void>
+printRawData(options: { data: string; }) => Promise<{ result: string; }>
 ```
 
 | Param         | Type                           |
 | ------------- | ------------------------------ |
 | **`options`** | <code>{ data: string; }</code> |
+
+**Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 
 --------------------
 
@@ -247,8 +275,10 @@ printRawData(options: { data: string; }) => Promise<void>
 ### printRowBlock()
 
 ```typescript
-printRowBlock() => Promise<void>
+printRowBlock() => Promise<{ result: string; }>
 ```
+
+**Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 
 --------------------
 
