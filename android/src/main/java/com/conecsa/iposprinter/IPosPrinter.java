@@ -184,7 +184,9 @@ public class IPosPrinter extends Service implements IPosPrinterService {
   @Override
   public int getPrinterStatus() throws RemoteException {
     if (! isServiceConnected()) { return 6; } // Return a status different from the printer default values
-    return mIPosPrinterService.getPrinterStatus();
+    int printerStatus = mIPosPrinterService.getPrinterStatus();
+    callback.onReturnString(String.valueOf(printerStatus));
+    return printerStatus;
   }
 
   /**
