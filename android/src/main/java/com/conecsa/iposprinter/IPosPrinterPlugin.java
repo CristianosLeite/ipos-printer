@@ -52,20 +52,20 @@ public class IPosPrinterPlugin extends Plugin {
   }
 
   @PluginMethod
-  public int getPrinterStatus(PluginCall call) throws RemoteException {
+  public void getPrinterStatus(PluginCall call) throws RemoteException {
     this.call = call;
-    return implementation.getPrinterStatus();
+    implementation.getPrinterStatus();
   }
 
   @PluginMethod
-  public String getPrinterStatusMessage(PluginCall call) throws RemoteException {
+  public void getPrinterStatusMessage(PluginCall call) throws RemoteException {
     this.call = call;
-    String value = call.getString("status");
-    if (value == null) {
+    Integer status = call.getInt("status");
+    if (status == null) {
       call.reject("Must provide a status value");
+      return;
     }
-    assert value != null;
-    return implementation.getPrinterStatus(Integer.parseInt(value));
+    implementation.getPrinterStatus(status);
   }
 
   @PluginMethod

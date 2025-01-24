@@ -50,12 +50,12 @@ getPrinterStatus() => Promise<{ result: number; }>
 ### getPrinterStatusMessage(...)
 
 ```typescript
-getPrinterStatusMessage(options: { value: number; }) => Promise<{ result: string; }>
+getPrinterStatusMessage(options: { status: number; }) => Promise<{ result: string; }>
 ```
 
-| Param         | Type                            |
-| ------------- | ------------------------------- |
-| **`options`** | <code>{ value: number; }</code> |
+| Param         | Type                             |
+| ------------- | -------------------------------- |
+| **`options`** | <code>{ status: number; }</code> |
 
 **Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 

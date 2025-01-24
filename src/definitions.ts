@@ -1,6 +1,6 @@
 export interface IPosPrinterPlugin {
   getPrinterStatus(): Promise<{ result: number }>;
-  getPrinterStatusMessage(options: {value: number}): Promise<{ result: string }>;
+  getPrinterStatusMessage(options: {status: number}): Promise<{ result: string }>;
   setPrinterPrintDepth(options: {depth: number}): Promise<{ result: string }>;
   setPrinterPrintFontType(options: {typeface: string}): Promise<{ result: string }>;
   setPrinterPrintFontSize(options: {fontSize: number}): Promise<{ result: string }>;

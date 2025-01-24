@@ -7,7 +7,7 @@ export class IPosPrinterWeb extends WebPlugin implements IPosPrinterPlugin {
     console.log('getPrinterStatus');
     return Promise.resolve({ result: 0 });
   }
-  getPrinterStatusMessage(options: { value: number; }): Promise<{ result: string; }> {
+  getPrinterStatusMessage(options: { status: number; }): Promise<{ result: string; }> {
     console.log('getPrinterStatusMessage', options);
     return Promise.resolve({ result: 'Success' });
   }

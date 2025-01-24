@@ -157,8 +157,8 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    * @param status Printer status
    * @return The printer status message
    */
-  String getPrinterStatus(int status) {
-      return switch (status) {
+  String getPrinterStatus(int status) throws RemoteException {
+      String printerStatusMessage = switch (status) {
       case PRINTER_NORMAL -> "Printer normal";
       case PRINTER_PAPERLESS -> "Printer paperless";
       case PRINTER_THP_HIGH_TEMPERATURE -> "Printer THP high temperature";
@@ -167,6 +167,8 @@ public class IPosPrinter extends Service implements IPosPrinterService {
       case PRINTER_ERROR_UNKNOWN -> "Printer error unknown";
       default -> "Printer status unknown";
     };
+      callback.onReturnString(printerStatusMessage);
+      return printerStatusMessage;
   }
 
   /**
