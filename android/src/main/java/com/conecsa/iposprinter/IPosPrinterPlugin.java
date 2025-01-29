@@ -96,12 +96,12 @@ public class IPosPrinterPlugin extends Plugin {
   @PluginMethod
   public void setPrinterPrintFontSize(PluginCall call) throws RemoteException {
     this.call = call;
-    String value = call.getString("fontSize");
+    Integer value = call.getInt("fontSize");
     if (value == null) {
       call.reject("Must provide a fontSize value");
     }
     assert value != null;
-    implementation.setPrinterPrintFontSize(Integer.parseInt(value), callback);
+    implementation.setPrinterPrintFontSize(value, callback);
   }
 
   @PluginMethod

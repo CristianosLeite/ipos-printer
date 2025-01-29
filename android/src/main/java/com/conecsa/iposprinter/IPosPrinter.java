@@ -257,7 +257,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
     if (! isServiceConnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.setPrinterPrintFontSize(fontSize, callback);
-      Log.i(TAG, "Printer print font size set to: " + fontSize);
+      callback.onReturnString("Font size set to: " + fontSize);
     });
   }
 
