@@ -107,12 +107,12 @@ public class IPosPrinterPlugin extends Plugin {
   @PluginMethod
   public void setPrinterPrintAlignment(PluginCall call) throws RemoteException {
     this.call = call;
-    String value = call.getString("alignment");
+    Integer value = call.getInt("alignment");
     if (value == null) {
       call.reject("Must provide an alignment value");
     }
     assert value != null;
-    implementation.setPrinterPrintAlignment(Integer.parseInt(value), callback);
+    implementation.setPrinterPrintAlignment(value, callback);
   }
 
   @PluginMethod

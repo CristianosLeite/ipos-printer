@@ -271,7 +271,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
     if (! isServiceConnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.setPrinterPrintAlignment(alignment, callback);
-      Log.i(TAG, "Printer print alignment set to: " + alignment);
+      callback.onReturnString("Alignment set to: " + (alignment == 0 ? "Left" : (alignment == 2 ? "Right" : "Center")));
     });
   }
 
@@ -311,19 +311,28 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void printText(String text, IPosPrinterCallback callback) {
-    runAsyncPrinterOperation(() -> {
-      int printerStatus = getPrinterStatus();
-      String printerStatusMessage = getPrinterStatus(printerStatus);
-
-      if (printerStatus == PRINTER_NORMAL) {
-        mIPosPrinterService.printText(text, callback);
-        mIPosPrinterService.printerPerformPrint(160, callback);
-        Log.i(TAG, "Sent text to printer");
-        Log.i(TAG, "Text: " + text);
-      } else {
-        Log.e(TAG, printerStatusMessage);
-      }
-    });
+      runAsyncPrinterOperation(() -> {
+          int maxAttempts = 5;
+          int attempts = 0;
+          while (attempts < maxAttempts) {
+              int printerStatus = getPrinterStatus();
+              if (printerStatus == PRINTER_NORMAL) {
+                  mIPosPrinterService.printText(text, callback);
+                  mIPosPrinterService.printerPerformPrint(160, callback);
+                  callback.onRunResult(true);
+                  break;
+              } else {
+                  attempts++;
+                  try {
+                      Thread.sleep(1000);
+                  } catch (InterruptedException e) {
+                      Log.e(TAG, "Interrupted while waiting for printer status", e);
+                      callback.onRunResult(false);
+                      break;
+                  }
+              }
+          }
+      });
   }
 
   /**
