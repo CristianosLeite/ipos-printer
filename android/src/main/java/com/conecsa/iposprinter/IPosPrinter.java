@@ -130,7 +130,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    * @param operation Function to execute
    */
   private void runAsyncPrinterOperation(AsyncPrinterOperation operation) {
-    if (!isServiceConnected()) { return; }
+    if (isServiceUnconnected()) { return; }
     ThreadPoolManager.getInstance().executeTask(() -> {
       try {
         operation.execute();
@@ -145,21 +145,21 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    * <p>Avoid null pointer reference.
    * @return boolean
    */
-  private boolean isServiceConnected() {
+  private boolean isServiceUnconnected() {
     if (mIPosPrinterService == null) {
       Log.e(TAG, "mIPosPrinterService is null");
-      return false;
+      return true;
     }
-    return true;
+    return false;
   }
 
   /**
    * Get the printer status.
    * <p>Overloads the getPrinterStatus method
+   *
    * @param status Printer status
-   * @return The printer status message
    */
-  String getPrinterStatus(int status) throws RemoteException {
+  void getPrinterStatus(int status) throws RemoteException {
       String printerStatusMessage = switch (status) {
       case PRINTER_NORMAL -> "Printer normal";
       case PRINTER_PAPERLESS -> "Printer paperless";
@@ -170,7 +170,6 @@ public class IPosPrinter extends Service implements IPosPrinterService {
       default -> "Printer status unknown";
     };
       callback.onReturnString(printerStatusMessage);
-      return printerStatusMessage;
   }
 
   /**
@@ -187,7 +186,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public int getPrinterStatus() throws RemoteException {
-    if (! isServiceConnected()) { return 6; } // Return a status different from the printer default values
+    if (isServiceUnconnected()) { return 6; } // Return a status different from the printer default values
     int printerStatus = mIPosPrinterService.getPrinterStatus();
     callback.onReturnString(String.valueOf(printerStatus));
     return printerStatus;
@@ -202,7 +201,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void printerInit(IPosPrinterCallback callback) throws RemoteException {
-    if (! isServiceConnected()) { return; }
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.printerInit(callback);
       Log.i(TAG, "Printer initialized");
@@ -216,7 +215,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void setPrinterPrintDepth(int depth, IPosPrinterCallback callback) {
-    if (!isServiceConnected()) {
+    if (isServiceUnconnected()) {
       return;
     }
     runAsyncPrinterOperation(() -> {
@@ -233,7 +232,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void setPrinterPrintFontType(String typeface, IPosPrinterCallback callback) throws RemoteException {
-    if (! isServiceConnected()) { return; }
+    if (isServiceUnconnected()) { return; }
     if (!Objects.equals(typeface, "ST")) {
       callback.onReturnString("Typeface is not supported");
       return;
@@ -254,7 +253,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void setPrinterPrintFontSize(int fontSize, IPosPrinterCallback callback) {
-    if (! isServiceConnected()) { return; }
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.setPrinterPrintFontSize(fontSize, callback);
       callback.onReturnString("Font size set to: " + fontSize);
@@ -268,7 +267,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void setPrinterPrintAlignment(int alignment, IPosPrinterCallback callback) {
-    if (! isServiceConnected()) { return; }
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.setPrinterPrintAlignment(alignment, callback);
       callback.onReturnString("Alignment set to: " + (alignment == 0 ? "Left" : (alignment == 2 ? "Right" : "Center")));
@@ -282,7 +281,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void printerFeedLines(int lines, IPosPrinterCallback callback) {
-    if (! isServiceConnected()) { return; }
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.printerFeedLines(lines, callback);
       Log.i(TAG, "Printer feed lines: " + lines);
@@ -297,7 +296,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void printBlankLines(int lines, int height, IPosPrinterCallback callback) {
-    if (! isServiceConnected()) { return; }
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.printBlankLines(lines, height, callback);
       Log.i(TAG, "Printed blank lines: " + lines);
@@ -345,7 +344,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void printSpecifiedTypeText(String text, String typeface, int fontSize, IPosPrinterCallback callback) {
-    if (! isServiceConnected()) { return; }
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.printSpecifiedTypeText(text, typeface, fontSize, callback);
       Log.i(TAG, "Sent specified type text to printer");
@@ -364,7 +363,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void PrintSpecFormatText(String text, String typeface, int fontSize, int alignment, IPosPrinterCallback callback) {
-    if (! isServiceConnected()) { return; }
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.PrintSpecFormatText(text, typeface, fontSize, alignment, callback);
       Log.i(TAG, "Sent specified format text to printer");
@@ -383,7 +382,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void printColumnsText(String[] colsTextArr, int[] colsWidthArr, int[] colsAlign, int isContinuousPrint, IPosPrinterCallback callback) {
-    if (! isServiceConnected()) { return; }
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.printColumnsText(colsTextArr, colsWidthArr, colsAlign, isContinuousPrint, callback);
       Log.i(TAG, "Sent columns text to printer");
@@ -399,7 +398,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void printBitmap(int alignment, int bitmapSize, Bitmap mBitmap, IPosPrinterCallback callback) {
-    if (! isServiceConnected()) { return; }
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.printBitmap(alignment, bitmapSize, mBitmap, callback);
       Log.i(TAG, "Sent bitmap to printer");
@@ -419,7 +418,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void printBarCode(String data, int symbology, int height, int width, int textPosition, IPosPrinterCallback callback) {
-    if (! isServiceConnected()) { return; }
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.printBarCode(data, symbology, height, width, textPosition, callback);
       Log.i(TAG, "Sent barcode to printer");
@@ -435,7 +434,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void printQRCode(String data, int moduleSize, int mErrorCorrectionLevel, IPosPrinterCallback callback) {
-    if (! isServiceConnected()) { return; }
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.printQRCode(data, moduleSize, mErrorCorrectionLevel, callback);
       Log.i(TAG, "Sent QR code to printer");
@@ -449,7 +448,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void printRawData(byte[] rawPrintData, IPosPrinterCallback callback) {
-    if (! isServiceConnected()) { return; }
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.printRawData(rawPrintData, callback);
       Log.i(TAG, "Sent raw data to printer");
@@ -463,7 +462,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void sendUserCMDData(byte[] data, IPosPrinterCallback callback) {
-    if (! isServiceConnected()) { return; }
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.sendUserCMDData(data, callback);
       Log.i(TAG, "Sent user command data to printer");
@@ -478,7 +477,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void printerPerformPrint(int feedLines, IPosPrinterCallback callback) {
-    if (! isServiceConnected()) { return; }
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.printerPerformPrint(feedLines, callback);
       Log.i(TAG, "Performed print");
@@ -490,7 +489,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    * @param callback Callback to return the result of the operation
    */
   public void printRowBlock(IPosPrinterCallback callback) {
-    if (! isServiceConnected()) { return; }
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.printRawData(BytesUtil.initLine1(384, 1), callback);
       Log.i(TAG, "Sent block line to printer");
