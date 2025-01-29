@@ -214,10 +214,12 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void setPrinterPrintDepth(int depth, IPosPrinterCallback callback) {
-    if (isServiceConnected()) { return; }
+    if (!isServiceConnected()) {
+      return;
+    }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.setPrinterPrintDepth(depth, callback);
-      Log.i(TAG, "Printer print depth set to: " + depth);
+      callback.onReturnString("Printer depth set to: " + depth);
     });
   }
 

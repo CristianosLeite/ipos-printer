@@ -34,16 +34,20 @@ public class IPosPrinterPlugin extends Plugin {
 
       @Override
       public void onRunResult(final boolean isSuccess) throws RemoteException {
+        if (call == null) { return; }
         Log.i(TAG, "result:" + isSuccess);
         r.put("value", isSuccess);
         call.resolve(r);
+        call = null;
       }
 
       @Override
       public void onReturnString(final String value) throws RemoteException {
+        if (call == null) { return; }
         Log.i(TAG, "result:" + value);
         r.put("value", value);
         call.resolve(r);
+        call = null;
       }
     };
 
@@ -71,12 +75,12 @@ public class IPosPrinterPlugin extends Plugin {
   @PluginMethod
   public void setPrinterPrintDepth(PluginCall call) throws RemoteException {
     this.call = call;
-    String value = call.getString("depth");
+    Integer value = call.getInt("depth");
     if (value == null) {
       call.reject("Must provide a depth value");
     }
     assert value != null;
-    implementation.setPrinterPrintDepth(Integer.parseInt(value), callback);
+    implementation.setPrinterPrintDepth(value, callback);
   }
 
   @PluginMethod
