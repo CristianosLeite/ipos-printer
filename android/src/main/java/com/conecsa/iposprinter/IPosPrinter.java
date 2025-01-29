@@ -15,6 +15,8 @@ import com.iposprinter.iposprinterservice.IPosPrinterService;
 
 import com.conecsa.iposprinter.Utils.BytesUtil;
 
+import java.util.Objects;
+
 public class IPosPrinter extends Service implements IPosPrinterService {
   private final String TAG = "IPosPrinter";
   private IPosPrinterService mIPosPrinterService;
@@ -226,15 +228,19 @@ public class IPosPrinter extends Service implements IPosPrinterService {
   /**
    * Sets the print font type, which has an effect on subsequent printing, unless initialized.
    * (Currently, only one font ST is supported, and more fonts will be supported in the future).
-   * @param typeface Currently, the font size is 16, 24, 32, and 48, and the default value of 24 is executed if the invalid size is entered
+   * @param typeface Font Name ST (currently only one type is supported)
    * @param callback Callback to return the result of the operation
    */
   @Override
-  public void setPrinterPrintFontType(String typeface, IPosPrinterCallback callback) {
+  public void setPrinterPrintFontType(String typeface, IPosPrinterCallback callback) throws RemoteException {
     if (! isServiceConnected()) { return; }
+    if (!Objects.equals(typeface, "ST")) {
+      callback.onReturnString("Typeface is not supported");
+      return;
+    }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.setPrinterPrintFontType(typeface, callback);
-      Log.i(TAG, "Printer print font type set to: " + typeface);
+      callback.onReturnString("Typeface set to: " + typeface);
     });
   }
 
