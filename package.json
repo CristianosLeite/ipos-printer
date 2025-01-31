@@ -1,7 +1,7 @@
 {
   "name": "ipos-printer",
   "version": "1.0.0",
-  "description": "Plugin for Q2i PDA printer",
+  "description": "Capacitor plugin for Q2i PDA printer",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
@@ -15,10 +15,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CristianosLeite/IposPrinter.git.git"
+    "url": "git+https://github.com/CristianosLeite/ipos-printer.git.git"
   },
   "bugs": {
-    "url": "https://github.com/CristianosLeite/IposPrinter.git/issues"
+    "url": "https://github.com/CristianosLeite/ipos-printer.git/issues"
   },
   "keywords": [
     "capacitor",
