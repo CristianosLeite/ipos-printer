@@ -31,7 +31,7 @@ export class IPosPrinterWeb extends WebPlugin implements IPosPrinterPlugin {
     console.log('printerFeedLines', options);
     return Promise.resolve({ result: 'Success' });
   }
-  printBlankLines(options: { lines: number; }): Promise<{ result: string; }> {
+  printBlankLines(options: { lines: number; height: number; }): Promise<{ result: string; }> {
     console.log('printBlankLines', options);
     return Promise.resolve({ result: 'Success' });
   }
@@ -47,7 +47,7 @@ export class IPosPrinterWeb extends WebPlugin implements IPosPrinterPlugin {
     console.log('PrintSpecFormatText', options);
     return Promise.resolve({ result: 'Success' });
   }
-  printColumnsText(options: { colsTextArr: string[]; colsWidthArr: number[]; colsAlign: number[]; }): Promise<{ result: string; }> {
+  printColumnsText(options: { colsTextArr: string[]; colsWidthArr: number[]; colsAlignArr: number[]; isContinuousPrint: number; }): Promise<{ result: string; }> {
     console.log('printColumnsText', options);
     return Promise.resolve({ result: 'Success' });
   }
@@ -59,7 +59,7 @@ export class IPosPrinterWeb extends WebPlugin implements IPosPrinterPlugin {
     console.log('printBarCode', options);
     return Promise.resolve({ result: 'Success' });
   }
-  printQRCode(options: { data: string; moduleSize: number; errorLevel: number; }): Promise<{ result: string; }> {
+  printQRCode(options: { data: string; moduleSize: number; errorCorrectionLevel: number; }): Promise<{ result: string; }> {
     console.log('printQRCode', options);
     return Promise.resolve({ result: 'Success' });
   }

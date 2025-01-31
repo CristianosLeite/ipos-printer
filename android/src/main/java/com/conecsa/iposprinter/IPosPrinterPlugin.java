@@ -11,9 +11,9 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.PluginCall;
 import com.iposprinter.iposprinterservice.IPosPrinterCallback;
 
-import java.util.Objects;
-
 import com.conecsa.iposprinter.Utils.BitmapHandler;
+
+import org.json.JSONException;
 
 @CapacitorPlugin(name = "IPosPrinter")
 public class IPosPrinterPlugin extends Plugin {
@@ -33,7 +33,7 @@ public class IPosPrinterPlugin extends Plugin {
     callback = new IPosPrinterCallback.Stub() {
 
       @Override
-      public void onRunResult(final boolean isSuccess) throws RemoteException {
+      public void onRunResult(final boolean isSuccess) {
         if (call == null) { return; }
         Log.i(TAG, "result:" + isSuccess);
         r.put("value", isSuccess);
@@ -42,7 +42,7 @@ public class IPosPrinterPlugin extends Plugin {
       }
 
       @Override
-      public void onReturnString(final String value) throws RemoteException {
+      public void onReturnString(final String value) {
         if (call == null) { return; }
         Log.i(TAG, "result:" + value);
         r.put("value", value);
@@ -73,7 +73,7 @@ public class IPosPrinterPlugin extends Plugin {
   }
 
   @PluginMethod
-  public void setPrinterPrintDepth(PluginCall call) throws RemoteException {
+  public void setPrinterPrintDepth(PluginCall call) {
     this.call = call;
     Integer value = call.getInt("depth");
     if (value == null) {
@@ -94,7 +94,7 @@ public class IPosPrinterPlugin extends Plugin {
   }
 
   @PluginMethod
-  public void setPrinterPrintFontSize(PluginCall call) throws RemoteException {
+  public void setPrinterPrintFontSize(PluginCall call) {
     this.call = call;
     Integer value = call.getInt("fontSize");
     if (value == null) {
@@ -105,7 +105,7 @@ public class IPosPrinterPlugin extends Plugin {
   }
 
   @PluginMethod
-  public void setPrinterPrintAlignment(PluginCall call) throws RemoteException {
+  public void setPrinterPrintAlignment(PluginCall call) {
     this.call = call;
     Integer value = call.getInt("alignment");
     if (value == null) {
@@ -116,31 +116,31 @@ public class IPosPrinterPlugin extends Plugin {
   }
 
   @PluginMethod
-  public void printerFeedLines(PluginCall call) throws RemoteException {
+  public void printerFeedLines(PluginCall call) {
     this.call = call;
-    String value = call.getString("lines");
+    Integer value = call.getInt("lines");
     if (value == null) {
       call.reject("Must provide a lines value");
     }
     assert value != null;
-    implementation.printerFeedLines(Integer.parseInt(value), callback);
+    implementation.printerFeedLines(value, callback);
   }
 
   @PluginMethod
-  public void printBlankLines(PluginCall call) throws RemoteException {
+  public void printBlankLines(PluginCall call) {
     this.call = call;
-    String lines = call.getString("lines");
-    String height = call.getString("height");
+    Integer lines = call.getInt("lines");
+    Integer height = call.getInt("height");
     if (lines == null || height == null) {
       call.reject("Must provide a lines and height value");
     }
     assert lines != null;
     assert height != null;
-    implementation.printBlankLines(Integer.parseInt(lines), Integer.parseInt(height), callback);
+    implementation.printBlankLines(lines, height, callback);
   }
 
   @PluginMethod
-  public void printText(PluginCall call) throws RemoteException {
+  public void printText(PluginCall call) {
     this.call = call;
     String text = call.getString("text");
     if (text == null) {
@@ -151,89 +151,101 @@ public class IPosPrinterPlugin extends Plugin {
   }
 
   @PluginMethod
-  public void printSpecifiedTypeText(PluginCall call) throws RemoteException {
+  public void printSpecifiedTypeText(PluginCall call) {
     this.call = call;
     String text = call.getString("text");
     String typeface = call.getString("typeface");
-    String fontSize = call.getString("fontSize");
+    Integer fontSize = call.getInt("fontSize");
     if (text == null || typeface == null || fontSize == null) {
       call.reject("Must provide a text, typeface and fontSize");
       return;
     }
-    implementation.printSpecifiedTypeText(text, typeface, Integer.parseInt(fontSize), callback);
+    implementation.printSpecifiedTypeText(text, typeface, fontSize, callback);
   }
 
   @PluginMethod
-  public void PrintSpecFormatText(PluginCall call) throws RemoteException {
+  public void PrintSpecFormatText(PluginCall call) {
     this.call = call;
     String text = call.getString("text");
     String typeface = call.getString("typeface");
-    String fontSize = call.getString("fontSize");
-    String alignment = call.getString("alignment");
+    Integer fontSize = call.getInt("fontSize");
+    Integer alignment = call.getInt("alignment");
     if (text == null || typeface == null || fontSize == null || alignment == null) {
       call.reject("Must provide a text, typeface, fontSize and alignment");
       return;
     }
-    implementation.PrintSpecFormatText(text, typeface, Integer.parseInt(fontSize), Integer.parseInt(alignment), callback);
+    implementation.PrintSpecFormatText(text, typeface, fontSize, alignment, callback);
   }
 
   @PluginMethod
-  public void printColumnsText(PluginCall call) throws RemoteException {
-    this.call = call;
-    String[] colsTextArr = new String[]{call.getString("colsTextArr")};
-    int[] colsWidthArr = new int[]{Integer.parseInt(Objects.requireNonNull(call.getString("colsWidthArr")))};
-    int[] colsAlign = new int[]{Integer.parseInt(Objects.requireNonNull(call.getString("colsAlign")))};
-    String isContinuousPrint = call.getString("isContinuousPrint");
-    if (isContinuousPrint == null) {
-      call.reject("Must provide a colsTextArr, colsWidthArr, colsAlign and isContinuousPrint");
-      return;
-    }
-    implementation.printColumnsText(colsTextArr, colsWidthArr, colsAlign, Integer.parseInt(isContinuousPrint), callback);
+  public void printColumnsText(PluginCall call) throws JSONException {
+      this.call = call;
+  
+      String[] colsTextArr = call.getArray("colsTextArr").toList().stream()
+          .map(Object::toString)
+          .toArray(String[]::new);
+  
+      int[] colsWidthArr = call.getArray("colsWidthArr").toList().stream()
+          .mapToInt(obj -> Integer.parseInt(obj.toString()))
+          .toArray();
+  
+      int[] colsAlignArr = call.getArray("colsAlignArr").toList().stream()
+          .mapToInt(obj -> Integer.parseInt(obj.toString()))
+          .toArray();
+  
+      Integer isContinuousPrint = call.getInt("isContinuousPrint");
+      if (colsTextArr.length == 0 || colsWidthArr.length == 0 || colsAlignArr.length == 0 || isContinuousPrint == null) {
+          call.reject("Must provide a cols text array, cols width array, cols align array and if is a continuous print");
+          return;
+      }
+
+      implementation.printColumnsText(colsTextArr, colsWidthArr, colsAlignArr, isContinuousPrint, callback);
   }
 
   @PluginMethod
-  public void printBitmap(PluginCall call) throws RemoteException {
+  public void printBitmap(PluginCall call) {
     this.call = call;
-    String alignment = call.getString("alignment");
-    String bitmapSize = call.getString("bitmapSize");
-    Bitmap bitmap = BitmapHandler.convertFromBase64(call.getString("bitmap"));
-    if (alignment == null || bitmapSize == null) {
+    Integer alignment = call.getInt("alignment");
+    Integer bitmapSize = call.getInt("bitmapSize");
+    String base64 = call.getString("base64");
+    if (alignment == null || bitmapSize == null || base64 == null) {
       call.reject("Must provide an alignment, bitmapSize and bitmap");
       return;
     }
-    implementation.printBitmap(Integer.parseInt(alignment), Integer.parseInt(bitmapSize), bitmap, callback);
+    Bitmap bitmap = BitmapHandler.convertFromBase64(base64);
+    implementation.printBitmap(alignment, bitmapSize, bitmap, callback);
   }
 
   @PluginMethod
-  public void printBarCode(PluginCall call) throws RemoteException {
+  public void printBarCode(PluginCall call) {
     this.call = call;
     String data = call.getString("data");
-    String symbology = call.getString("symbology");
-    String height = call.getString("height");
-    String width = call.getString("width");
-    String textPosition = call.getString("textPosition");
+    Integer symbology = call.getInt("symbology");
+    Integer height = call.getInt("height");
+    Integer width = call.getInt("width");
+    Integer textPosition = call.getInt("textPosition");
     if (data == null || symbology == null || height == null || width == null || textPosition == null) {
       call.reject("Must provide a data, symbology, height, width and textPosition");
       return;
     }
-    implementation.printBarCode(data, Integer.parseInt(symbology), Integer.parseInt(height), Integer.parseInt(width), Integer.parseInt(textPosition), callback);
+    implementation.printBarCode(data, symbology, height, width, textPosition, callback);
   }
 
   @PluginMethod
-  public void printQRCode(PluginCall call) throws RemoteException {
+  public void printQRCode(PluginCall call) {
     this.call = call;
     String data = call.getString("data");
-    String moduleSize = call.getString("moduleSize");
-    String mErrorCorrectionLevel = call.getString("mErrorCorrectionLevel");
+    Integer moduleSize = call.getInt("moduleSize");
+    Integer mErrorCorrectionLevel = call.getInt("errorCorrectionLevel");
     if (data == null || moduleSize == null || mErrorCorrectionLevel == null) {
-      call.reject("Mus provide a data, moduleSize and mErrorCorrectionLevel");
+      call.reject("Mus provide a data, module size and the error correction level");
       return;
     }
-    implementation.printQRCode(data, Integer.parseInt(moduleSize), Integer.parseInt(mErrorCorrectionLevel), callback);
+    implementation.printQRCode(data, moduleSize, mErrorCorrectionLevel, callback);
   }
 
   @PluginMethod
-  public void printRawData(PluginCall call) throws RemoteException {
+  public void printRawData(PluginCall call) {
     this.call = call;
     String rawPrintData = call.getString("data");
     if (rawPrintData == null) {
