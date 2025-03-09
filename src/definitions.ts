@@ -48,14 +48,6 @@ export interface IPosPrinterPlugin {
    */
   setPrinterPrintAlignment(options: {alignment: number}): Promise<{ result: string }>;
     /**
-   * Printer paper transfer (forced line break, paper lines are taken after the previous print content is finished, and the motor idles the paper to move at this time, and no data is transmitted to the printer).
-   * @param options Object containing lines quantity
-   * @property lines: Number of printer lines (each line is a pixel)
-   * @example {lines: 3} // Feed 3 lines
-   * @returns The result of the operation
-   */
-  printerFeedLines(options: {lines: number}): Promise<{ result: string }>;
-    /**
    * Printing blank lines (forced line wrapping, printing blank lines after the previous print, and all the data transferred to the printer is 0x00).
    * @param options Object containing lines quantity and height
    * @example {lines: 3, height: 24} // Print 3 blank lines with a height of 24 pixels

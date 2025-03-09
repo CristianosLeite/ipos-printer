@@ -19,7 +19,6 @@ npx cap sync
 * [`setPrinterPrintFontType(...)`](#setprinterprintfonttype)
 * [`setPrinterPrintFontSize(...)`](#setprinterprintfontsize)
 * [`setPrinterPrintAlignment(...)`](#setprinterprintalignment)
-* [`printerFeedLines(...)`](#printerfeedlines)
 * [`printBlankLines(...)`](#printblanklines)
 * [`printText(...)`](#printtext)
 * [`printSpecifiedTypeText(...)`](#printspecifiedtypetext)
@@ -130,23 +129,6 @@ Sets the print alignment, which has an effect on subsequent printing, unless ini
 | Param         | Type                                | Description                       |
 | ------------- | ----------------------------------- | --------------------------------- |
 | **`options`** | <code>{ alignment: number; }</code> | Object containing alignment value |
-
-**Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
-
---------------------
-
-
-### printerFeedLines(...)
-
-```typescript
-printerFeedLines(options: { lines: number; }) => Promise<{ result: string; }>
-```
-
-Printer paper transfer (forced line break, paper lines are taken after the previous print content is finished, and the motor idles the paper to move at this time, and no data is transmitted to the printer).
-
-| Param         | Type                            | Description                      |
-| ------------- | ------------------------------- | -------------------------------- |
-| **`options`** | <code>{ lines: number; }</code> | Object containing lines quantity |
 
 **Returns:** <code>Promise&lt;{ result: string; }&gt;</code>
 

@@ -27,10 +27,6 @@ export class IPosPrinterWeb extends WebPlugin implements IPosPrinterPlugin {
     console.log('setPrinterPrintAlignment', options);
     return Promise.resolve({ result: 'Success' });
   }
-  printerFeedLines(options: { lines: number; }): Promise<{ result: string; }> {
-    console.log('printerFeedLines', options);
-    return Promise.resolve({ result: 'Success' });
-  }
   printBlankLines(options: { lines: number; height: number; }): Promise<{ result: string; }> {
     console.log('printBlankLines', options);
     return Promise.resolve({ result: 'Success' });

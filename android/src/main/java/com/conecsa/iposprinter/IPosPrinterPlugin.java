@@ -22,7 +22,7 @@ public class IPosPrinterPlugin extends Plugin {
   private PluginCall call;
 
   private IPosPrinter implementation;
-  private IPosPrinterCallback callback = null;
+  private IPosPrinterCallback callback;
 
   @Override
   public void load() {
@@ -30,7 +30,20 @@ public class IPosPrinterPlugin extends Plugin {
     implementation.bindService(getContext());
 
     // Callback must be declared here so it can be passed as parameter to the service methods
-    callback = new IPosPrinterCallback.Stub() {
+    callback = setCallback();
+
+    // Used to initialize the printer
+    implementation.setCallback(callback);
+  }
+
+  @Override
+  public void handleOnDestroy() {
+    super.handleOnDestroy();
+    implementation.onDestroy();
+  }
+
+  private IPosPrinterCallback setCallback() {
+    return new IPosPrinterCallback.Stub() {
 
       @Override
       public void onRunResult(final boolean isSuccess) {
@@ -50,9 +63,6 @@ public class IPosPrinterPlugin extends Plugin {
         call = null;
       }
     };
-
-    // Used to initialize the printer
-    implementation.setCallback(callback);
   }
 
   @PluginMethod
@@ -116,17 +126,6 @@ public class IPosPrinterPlugin extends Plugin {
   }
 
   @PluginMethod
-  public void printerFeedLines(PluginCall call) {
-    this.call = call;
-    Integer value = call.getInt("lines");
-    if (value == null) {
-      call.reject("Must provide a lines value");
-    }
-    assert value != null;
-    implementation.printerFeedLines(value, callback);
-  }
-
-  @PluginMethod
   public void printBlankLines(PluginCall call) {
     this.call = call;
     Integer lines = call.getInt("lines");
@@ -179,27 +178,27 @@ public class IPosPrinterPlugin extends Plugin {
 
   @PluginMethod
   public void printColumnsText(PluginCall call) throws JSONException {
-      this.call = call;
-  
-      String[] colsTextArr = call.getArray("colsTextArr").toList().stream()
-          .map(Object::toString)
-          .toArray(String[]::new);
-  
-      int[] colsWidthArr = call.getArray("colsWidthArr").toList().stream()
-          .mapToInt(obj -> Integer.parseInt(obj.toString()))
-          .toArray();
-  
-      int[] colsAlignArr = call.getArray("colsAlignArr").toList().stream()
-          .mapToInt(obj -> Integer.parseInt(obj.toString()))
-          .toArray();
-  
-      Integer isContinuousPrint = call.getInt("isContinuousPrint");
-      if (colsTextArr.length == 0 || colsWidthArr.length == 0 || colsAlignArr.length == 0 || isContinuousPrint == null) {
-          call.reject("Must provide a cols text array, cols width array, cols align array and if is a continuous print");
-          return;
-      }
+    this.call = call;
 
-      implementation.printColumnsText(colsTextArr, colsWidthArr, colsAlignArr, isContinuousPrint, callback);
+    String[] colsTextArr = call.getArray("colsTextArr").toList().stream()
+            .map(Object::toString)
+            .toArray(String[]::new);
+
+    int[] colsWidthArr = call.getArray("colsWidthArr").toList().stream()
+            .mapToInt(obj -> Integer.parseInt(obj.toString()))
+            .toArray();
+
+    int[] colsAlignArr = call.getArray("colsAlignArr").toList().stream()
+            .mapToInt(obj -> Integer.parseInt(obj.toString()))
+            .toArray();
+
+    Integer isContinuousPrint = call.getInt("isContinuousPrint");
+    if (colsTextArr.length == 0 || colsWidthArr.length == 0 || colsAlignArr.length == 0 || isContinuousPrint == null) {
+      call.reject("Must provide a cols text array, cols width array, cols align array and if is a continuous print");
+      return;
+    }
+
+    implementation.printColumnsText(colsTextArr, colsWidthArr, colsAlignArr, isContinuousPrint, callback);
   }
 
   @PluginMethod
