@@ -1,0 +1,14 @@
+[versions]
+appcompat = "1.7.1"
+espressoCore = "3.7.0"
+gradle = "9.2.1"
+junit = "4.13.2"
+junitVersion = "1.3.0"
+compileSdk = "37"
+
+[libraries]
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "gradle" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
