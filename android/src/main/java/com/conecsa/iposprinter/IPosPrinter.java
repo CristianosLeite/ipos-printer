@@ -216,7 +216,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    * <li>3:PRINTER_MOTOR_HIGH_TEMPERATURE In this case, printing is not executed. <p>After cooling, you need to initialize the printer and re-initiate the printing job
    * <li>4:PRINTER_IS_BUSY    The printer is printing at this point
    * <li>5:PRINT_ERROR_UNKNOWN  The printer is abnormal
-   * @throws RemoteException Throws a RemoteException if cannot get the printer status.
+   * @throws RemoteException Throws a RemoteException if it cannot get the printer status.
    */
   @Override
   public int getPrinterStatus() throws RemoteException {
@@ -279,9 +279,9 @@ public class IPosPrinter extends Service implements IPosPrinterService {
 
   /**
    * Sets the font size, which has an effect on subsequent printing, unless initialized.
-   * <p>Note: The font size is a way to print outside of the standard international directives,
+   * <p>Note: The font size is a way to print outside the standard international directives,
    * Adjusting the font size affects the character width and the number of characters per line will also change.
-   * Therefore, the layout formed by monospaced fonts may be out of order and you need to adjust it yourself.
+   * Therefore, the layout formed by monospaced fonts may be out of order, and you need to adjust it yourself.
    * @param fontSize Currently, the font size is 16, 24, 32, and 48, and the default value of 24 is executed if the invalid size is entered
    * @param callback Callback to return the result of the operation
    */

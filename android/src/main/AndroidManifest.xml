@@ -5,9 +5,10 @@
 
     <application>
         <service
-            android:name="com.conecsa.ipos.printer.service.IPosPrinter"
+            android:name="com.conecsa.iposprinter.IPosPrinter"
             android:exported="true"
-            android:process=":remote">
+            android:process=":remote"
+            tools:ignore="ExportedService">
             <intent-filter>
                 <action android:name="com.iposprinter.iposprinterservice.BIND_SERVICE" />
             </intent-filter>
@@ -16,6 +17,6 @@
             android:name="com.iposprinter.iposprinterservice.IPosPrinterService"
             android:exported="true"
             android:process=":remote"
-            tools:ignore="Instantiatable" />
+            tools:ignore="Instantiatable,ExportedService" />
     </application>
 </manifest>

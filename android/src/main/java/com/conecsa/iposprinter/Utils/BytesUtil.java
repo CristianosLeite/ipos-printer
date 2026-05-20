@@ -2,34 +2,6 @@ package com.conecsa.iposprinter.Utils;
 
 
 public class BytesUtil {
-    /**
-     * Create a line of data for printing.
-     * @param size  Line size
-     * @param width Line width
-     * @return Line data
-     */
-    protected static int[] createLineData(int size, int width) {
-        int[] pixels = new int[width * (size + 6)];
-        int k = 0;
-        for (int j = 0; j < 3; j++) {
-            for (int i = 0; i < width; i++) {
-                pixels[k++] = 0xffffffff;
-            }
-        }
-
-        for (int j = 0; j < size; j++) {
-            for (int i = 0; i < width; i++) {
-                pixels[k++] = 0xff000000;
-            }
-        }
-
-        for (int j = 0; j < 3; j++) {
-            for (int i = 0; i < width; i++) {
-                pixels[k++] = 0xffffffff;
-            }
-        }
-        return pixels;
-    }
 
     /**
      * Create a line of data for printing
