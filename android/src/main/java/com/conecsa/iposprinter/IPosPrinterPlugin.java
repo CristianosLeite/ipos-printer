@@ -15,8 +15,6 @@ import com.conecsa.iposprinter.Utils.BitmapHandler;
 
 import org.json.JSONException;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 @CapacitorPlugin(name = "IPosPrinter")
 public class IPosPrinterPlugin extends Plugin {
   private final String TAG = "IPosPrinterPlugin";
@@ -54,7 +52,7 @@ public class IPosPrinterPlugin extends Plugin {
    *
    * <p>The native printer service may invoke the callback more than once per operation (the
    * service itself is handed the callback, {@code printerPerformPrint} is handed it again, and the
-   * wrapper also calls it explicitly). The {@link AtomicBoolean} guard ensures the call is resolved
+   * wrapper also calls it explicitly). The {@link SingleShotGuard} ensures the call is resolved
    * exactly once. Crucially, because every {@code PluginCall} gets its own callback instance, a
    * late firing left over from a previous operation can no longer resolve a subsequent operation's
    * call - which was the source of the intermittent printing crash/hang.
@@ -64,11 +62,11 @@ public class IPosPrinterPlugin extends Plugin {
    */
   private IPosPrinterCallback resolver(final PluginCall call) {
     return new IPosPrinterCallback.Stub() {
-      private final AtomicBoolean resolved = new AtomicBoolean(false);
+      private final SingleShotGuard guard = new SingleShotGuard();
 
       @Override
       public void onRunResult(final boolean isSuccess) {
-        if (!resolved.compareAndSet(false, true)) { return; }
+        if (!guard.tryResolve()) { return; }
         Log.i(TAG, "result:" + isSuccess);
         JSObject ret = new JSObject();
         ret.put("value", isSuccess);
@@ -77,7 +75,7 @@ public class IPosPrinterPlugin extends Plugin {
 
       @Override
       public void onReturnString(final String value) {
-        if (!resolved.compareAndSet(false, true)) { return; }
+        if (!guard.tryResolve()) { return; }
         Log.i(TAG, "result:" + value);
         JSObject ret = new JSObject();
         ret.put("value", value);
