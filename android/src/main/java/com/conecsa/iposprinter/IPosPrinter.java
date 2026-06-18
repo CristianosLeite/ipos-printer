@@ -341,6 +341,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void printerFeedLines(int lines, IPosPrinterCallback callback) {
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.printerFeedLines(lines, callback);
       Log.i(TAG, "Sent lines to printer");
@@ -356,6 +357,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void printBlankLines(int lines, int height, IPosPrinterCallback callback) {
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.printBlankLines(lines, height, callback);
       Log.i(TAG, "Sent blank lines to printer");
@@ -370,6 +372,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void printText(String text, IPosPrinterCallback callback) {
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.printText(text, callback);
       mIPosPrinterService.printerPerformPrint(0, callback);
@@ -388,6 +391,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void printSpecifiedTypeText(String text, String typeface, int fontSize, IPosPrinterCallback callback) {
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.printSpecifiedTypeText(text, typeface, fontSize, callback);
       mIPosPrinterService.printerPerformPrint(0, callback);
@@ -407,6 +411,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void PrintSpecFormatText(String text, String typeface, int fontSize, int alignment, IPosPrinterCallback callback) {
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.PrintSpecFormatText(text, typeface, fontSize, alignment, callback);
       mIPosPrinterService.printerPerformPrint(0, callback);
@@ -426,6 +431,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public void printColumnsText(String[] colsTextArr, int[] colsWidthArr, int[] colsAlign, int isContinuousPrint, IPosPrinterCallback callback) {
+    if (isServiceUnconnected()) { return; }
     runAsyncPrinterOperation(() -> {
       mIPosPrinterService.printColumnsText(colsTextArr, colsWidthArr, colsAlign, isContinuousPrint, callback);
       mIPosPrinterService.printerPerformPrint(0, callback);
