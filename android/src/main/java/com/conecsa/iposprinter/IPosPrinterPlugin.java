@@ -15,25 +15,32 @@ import com.conecsa.iposprinter.Utils.BitmapHandler;
 
 import org.json.JSONException;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 @CapacitorPlugin(name = "IPosPrinter")
 public class IPosPrinterPlugin extends Plugin {
   private final String TAG = "IPosPrinterPlugin";
-  private final JSObject r = new JSObject();
-  private PluginCall call;
 
   private IPosPrinter implementation;
-  private IPosPrinterCallback callback;
 
   @Override
   public void load() {
     implementation = new IPosPrinter();
     implementation.bindService(getContext());
 
-    // Callback must be declared here so it can be passed as parameter to the service methods
-    callback = setCallback();
+    // Connection-time callback used only by printerInit during the ServiceConnection. It is NOT
+    // tied to any PluginCall, so it must never resolve one - it only logs.
+    implementation.setCallback(new IPosPrinterCallback.Stub() {
+      @Override
+      public void onRunResult(final boolean isSuccess) {
+        Log.i(TAG, "init result: " + isSuccess);
+      }
 
-    // Used to initialize the printer
-    implementation.setCallback(callback);
+      @Override
+      public void onReturnString(final String value) {
+        Log.i(TAG, "init result: " + value);
+      }
+    });
   }
 
   @Override
@@ -42,116 +49,121 @@ public class IPosPrinterPlugin extends Plugin {
     implementation.onDestroy();
   }
 
-  private IPosPrinterCallback setCallback() {
+  /**
+   * Builds a callback bound to a single {@link PluginCall}.
+   *
+   * <p>The native printer service may invoke the callback more than once per operation (the
+   * service itself is handed the callback, {@code printerPerformPrint} is handed it again, and the
+   * wrapper also calls it explicitly). The {@link AtomicBoolean} guard ensures the call is resolved
+   * exactly once. Crucially, because every {@code PluginCall} gets its own callback instance, a
+   * late firing left over from a previous operation can no longer resolve a subsequent operation's
+   * call - which was the source of the intermittent printing crash/hang.
+   *
+   * @param call The Capacitor call to resolve once.
+   * @return A fresh, single-shot callback bound to {@code call}.
+   */
+  private IPosPrinterCallback resolver(final PluginCall call) {
     return new IPosPrinterCallback.Stub() {
+      private final AtomicBoolean resolved = new AtomicBoolean(false);
 
       @Override
       public void onRunResult(final boolean isSuccess) {
-        if (call == null) { return; }
+        if (!resolved.compareAndSet(false, true)) { return; }
         Log.i(TAG, "result:" + isSuccess);
-        r.put("value", isSuccess);
-        call.resolve(r);
-        call = null;
+        JSObject ret = new JSObject();
+        ret.put("value", isSuccess);
+        call.resolve(ret);
       }
 
       @Override
       public void onReturnString(final String value) {
-        if (call == null) { return; }
+        if (!resolved.compareAndSet(false, true)) { return; }
         Log.i(TAG, "result:" + value);
-        r.put("value", value);
-        call.resolve(r);
-        call = null;
+        JSObject ret = new JSObject();
+        ret.put("value", value);
+        call.resolve(ret);
       }
     };
   }
 
   @PluginMethod
   public void getPrinterStatus(PluginCall call) throws RemoteException {
-    this.call = call;
-    implementation.getPrinterStatus();
+    implementation.getPrinterStatus(resolver(call));
   }
 
   @PluginMethod
   public void getPrinterStatusMessage(PluginCall call) throws RemoteException {
-    this.call = call;
     Integer status = call.getInt("status");
     if (status == null) {
       call.reject("Must provide a status value");
       return;
     }
-    implementation.getPrinterStatus(status);
+    implementation.getPrinterStatus(status, resolver(call));
   }
 
   @PluginMethod
   public void setPrinterPrintDepth(PluginCall call) {
-    this.call = call;
     Integer value = call.getInt("depth");
     if (value == null) {
       call.reject("Must provide a depth value");
+      return;
     }
-    assert value != null;
-    implementation.setPrinterPrintDepth(value, callback);
+    implementation.setPrinterPrintDepth(value, resolver(call));
   }
 
   @PluginMethod
   public void setPrinterPrintFontType(PluginCall call) throws RemoteException {
-    this.call = call;
     String value = call.getString("typeface");
     if (value == null) {
       call.reject("Must provide a typeface");
+      return;
     }
-    implementation.setPrinterPrintFontType(value, callback);
+    implementation.setPrinterPrintFontType(value, resolver(call));
   }
 
   @PluginMethod
   public void setPrinterPrintFontSize(PluginCall call) {
-    this.call = call;
     Integer value = call.getInt("fontSize");
     if (value == null) {
       call.reject("Must provide a fontSize value");
+      return;
     }
-    assert value != null;
-    implementation.setPrinterPrintFontSize(value, callback);
+    implementation.setPrinterPrintFontSize(value, resolver(call));
   }
 
   @PluginMethod
   public void setPrinterPrintAlignment(PluginCall call) {
-    this.call = call;
     Integer value = call.getInt("alignment");
     if (value == null) {
       call.reject("Must provide an alignment value");
+      return;
     }
-    assert value != null;
-    implementation.setPrinterPrintAlignment(value, callback);
+    implementation.setPrinterPrintAlignment(value, resolver(call));
   }
 
   @PluginMethod
   public void printBlankLines(PluginCall call) {
-    this.call = call;
     Integer lines = call.getInt("lines");
     Integer height = call.getInt("height");
     if (lines == null || height == null) {
       call.reject("Must provide a lines and height value");
+      return;
     }
-    assert lines != null;
-    assert height != null;
-    implementation.printBlankLines(lines, height, callback);
+    implementation.printBlankLines(lines, height, resolver(call));
   }
 
   @PluginMethod
   public void printText(PluginCall call) {
-    this.call = call;
     String text = call.getString("text");
     if (text == null) {
       call.reject("Must provide a text");
       return;
     }
-    implementation.printText(text, callback);
+    implementation.printText(text, resolver(call));
   }
 
   @PluginMethod
   public void printSpecifiedTypeText(PluginCall call) {
-    this.call = call;
     String text = call.getString("text");
     String typeface = call.getString("typeface");
     Integer fontSize = call.getInt("fontSize");
@@ -159,12 +171,11 @@ public class IPosPrinterPlugin extends Plugin {
       call.reject("Must provide a text, typeface and fontSize");
       return;
     }
-    implementation.printSpecifiedTypeText(text, typeface, fontSize, callback);
+    implementation.printSpecifiedTypeText(text, typeface, fontSize, resolver(call));
   }
 
   @PluginMethod
   public void PrintSpecFormatText(PluginCall call) {
-    this.call = call;
     String text = call.getString("text");
     String typeface = call.getString("typeface");
     Integer fontSize = call.getInt("fontSize");
@@ -173,13 +184,11 @@ public class IPosPrinterPlugin extends Plugin {
       call.reject("Must provide a text, typeface, fontSize and alignment");
       return;
     }
-    implementation.PrintSpecFormatText(text, typeface, fontSize, alignment, callback);
+    implementation.PrintSpecFormatText(text, typeface, fontSize, alignment, resolver(call));
   }
 
   @PluginMethod
   public void printColumnsText(PluginCall call) throws JSONException {
-    this.call = call;
-
     String[] colsTextArr = call.getArray("colsTextArr").toList().stream()
             .map(Object::toString)
             .toArray(String[]::new);
@@ -198,12 +207,11 @@ public class IPosPrinterPlugin extends Plugin {
       return;
     }
 
-    implementation.printColumnsText(colsTextArr, colsWidthArr, colsAlignArr, isContinuousPrint, callback);
+    implementation.printColumnsText(colsTextArr, colsWidthArr, colsAlignArr, isContinuousPrint, resolver(call));
   }
 
   @PluginMethod
   public void printBitmap(PluginCall call) {
-    this.call = call;
     Integer alignment = call.getInt("alignment");
     Integer bitmapSize = call.getInt("bitmapSize");
     String base64 = call.getString("base64");
@@ -212,12 +220,11 @@ public class IPosPrinterPlugin extends Plugin {
       return;
     }
     Bitmap bitmap = BitmapHandler.convertFromBase64(base64);
-    implementation.printBitmap(alignment, bitmapSize, bitmap, callback);
+    implementation.printBitmap(alignment, bitmapSize, bitmap, resolver(call));
   }
 
   @PluginMethod
   public void printBarCode(PluginCall call) {
-    this.call = call;
     String data = call.getString("data");
     Integer symbology = call.getInt("symbology");
     Integer height = call.getInt("height");
@@ -227,12 +234,11 @@ public class IPosPrinterPlugin extends Plugin {
       call.reject("Must provide a data, symbology, height, width and textPosition");
       return;
     }
-    implementation.printBarCode(data, symbology, height, width, textPosition, callback);
+    implementation.printBarCode(data, symbology, height, width, textPosition, resolver(call));
   }
 
   @PluginMethod
   public void printQRCode(PluginCall call) {
-    this.call = call;
     String data = call.getString("data");
     Integer moduleSize = call.getInt("moduleSize");
     Integer mErrorCorrectionLevel = call.getInt("errorCorrectionLevel");
@@ -240,23 +246,21 @@ public class IPosPrinterPlugin extends Plugin {
       call.reject("Mus provide a data, module size and the error correction level");
       return;
     }
-    implementation.printQRCode(data, moduleSize, mErrorCorrectionLevel, callback);
+    implementation.printQRCode(data, moduleSize, mErrorCorrectionLevel, resolver(call));
   }
 
   @PluginMethod
   public void printRawData(PluginCall call) {
-    this.call = call;
     String rawPrintData = call.getString("data");
     if (rawPrintData == null) {
       call.reject("Must provide a data");
       return;
     }
-    implementation.printRawData(rawPrintData.getBytes(), callback);
+    implementation.printRawData(rawPrintData.getBytes(), resolver(call));
   }
 
   @PluginMethod
   public void printRowBlock(PluginCall call) {
-    this.call = call;
-    implementation.printRowBlock(callback);
+    implementation.printRowBlock(resolver(call));
   }
 }

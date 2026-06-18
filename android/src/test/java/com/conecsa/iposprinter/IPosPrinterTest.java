@@ -40,6 +40,7 @@ public class IPosPrinterTest {
 
   @Mock private IPosPrinterService service;
   @Mock private IPosPrinterCallback callback;
+  @Mock private IPosPrinterCallback perCallCallback;
 
   @Before
   public void setUp() {
@@ -117,6 +118,36 @@ public class IPosPrinterTest {
 
     assertEquals(printer.PRINTER_IS_BUSY, status);
     verify(callback).onReturnString("4");
+  }
+
+  // --- per-call callback overloads (race-condition fix) --------------------------------------
+
+  @Test
+  public void getPrinterStatusMessage_withPerCallCallback_usesSuppliedCallbackOnly() throws Exception {
+    printer.getPrinterStatus(printer.PRINTER_PAPERLESS, perCallCallback);
+    verify(perCallCallback).onReturnString("Printer paperless");
+    // The shared/connection-time callback must not be touched by a per-call request.
+    verify(callback, never()).onReturnString(any());
+  }
+
+  @Test
+  public void getPrinterStatus_withPerCallCallback_returnsSentinelWhenUnconnected() throws Exception {
+    int status = printer.getPrinterStatus(perCallCallback);
+    assertEquals(6, status);
+    verify(perCallCallback, never()).onReturnString(any());
+    verify(callback, never()).onReturnString(any());
+  }
+
+  @Test
+  public void getPrinterStatus_withPerCallCallback_usesSuppliedCallbackOnly() throws Exception {
+    connectService(service);
+    when(service.getPrinterStatus()).thenReturn(printer.PRINTER_IS_BUSY);
+
+    int status = printer.getPrinterStatus(perCallCallback);
+
+    assertEquals(printer.PRINTER_IS_BUSY, status);
+    verify(perCallCallback).onReturnString("4");
+    verify(callback, never()).onReturnString(any());
   }
 
   // --- printerInit ---------------------------------------------------------------------------

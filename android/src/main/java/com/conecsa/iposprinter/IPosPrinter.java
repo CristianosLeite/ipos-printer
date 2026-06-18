@@ -194,6 +194,18 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    * @param status Printer status
    */
   void getPrinterStatus(int status) throws RemoteException {
+    getPrinterStatus(status, callback);
+  }
+
+  /**
+   * Maps a status code to a message and reports it through the supplied callback.
+   * <p>Overload that takes a per-call callback so each plugin call resolves independently
+   * (avoids the shared-callback race condition).
+   *
+   * @param status Printer status
+   * @param cb Callback bound to a single plugin call
+   */
+  void getPrinterStatus(int status, IPosPrinterCallback cb) throws RemoteException {
     String printerStatusMessage = switch (status) {
       case PRINTER_NORMAL -> "Printer normal";
       case PRINTER_PAPERLESS -> "Printer paperless";
@@ -203,7 +215,7 @@ public class IPosPrinter extends Service implements IPosPrinterService {
       case PRINTER_ERROR_UNKNOWN -> "Printer error unknown";
       default -> "Printer status unknown";
     };
-    callback.onReturnString(printerStatusMessage);
+    cb.onReturnString(printerStatusMessage);
   }
 
   /**
@@ -220,10 +232,22 @@ public class IPosPrinter extends Service implements IPosPrinterService {
    */
   @Override
   public int getPrinterStatus() throws RemoteException {
+    return getPrinterStatus(callback);
+  }
+
+  /**
+   * Reads the printer status and reports it through the supplied callback.
+   * <p>Overload that takes a per-call callback so each plugin call resolves independently
+   * (avoids the shared-callback race condition).
+   *
+   * @param cb Callback bound to a single plugin call
+   * @return The current state of the printer (or 6 when the service is unconnected)
+   */
+  public int getPrinterStatus(IPosPrinterCallback cb) throws RemoteException {
     if (isServiceUnconnected()) { return 6; } // Return a status different from the printer default values
     int printerStatus = mIPosPrinterService.getPrinterStatus();
     Log.i(TAG, "Printer status: " + printerStatus);
-    callback.onReturnString(String.valueOf(printerStatus));
+    cb.onReturnString(String.valueOf(printerStatus));
     return printerStatus;
   }
 
