@@ -48,17 +48,16 @@ resolvendo-a prematuramente ou deixando uma promise pendurada → trava/cras int
 - [ ] `IPosPrinter.java:222-228` (`getPrinterStatus`) existe e expõe os estados
   (`PRINTER_PAPERLESS`, `PRINTER_IS_BUSY`, etc., 29-34), mas **não é usado antes de imprimir**. →
   Expor/garantir verificação de status (papel/temperatura/busy) antes de enviar o lote de
-  impressão, permitindo ao frontend abortar/reimprimir com mensagem clara. **(Alto)**
-- [ ] `IPosPrinter.java:84-87,182-188` — `onServiceConnected` faz `printerInit` que pode lançar
-  `RemoteException` re-empacotada em `RuntimeException` (86); inconsistência entre métodos que
-  checam `isServiceUnconnected()` e os que não checam (ex.: `printBlankLines` 333, `printText` 347
-  não checam). → Uniformizar a checagem de conexão em todos os métodos. **(Alto)**
+  impressão, permitindo ao frontend abortar/reimprimir com mensagem clara. **(Alto)** — *pendente (depende do front tratar status)*
+- [x] `IPosPrinter.java` — inconsistência entre métodos que checam `isServiceUnconnected()` e os que
+  não checam (`printBlankLines`, `printText`). → ✓ checagem de serviço desconectado uniformizada nos
+  métodos de impressão. Commit `8f6cd02`. **(Alto)**
 
 ## Médio / Qualidade
-- [ ] `IPosPrinter.java` — logs `Log.i/d` por operação em produção (verbosos). → Reduzir nível de
-  log no caminho quente de impressão. **(Qualidade)**
+- [x] `IPosPrinter.java` — logs `Log.i/d` por operação em produção (verbosos). → ✓ nível de log no
+  caminho quente reduzido para `debug`. Commit `dd60ee6`. **(Qualidade)**
 - [ ] Após estabilizar a API nativa, **regenerar o README** com `npm run build` (docgen) — o bloco
-  de API do README é gerado a partir do JSDoc/source. **(Qualidade)**
+  de API do README é gerado a partir do JSDoc/source. **(Qualidade)** — *pendente*
 
 ## Verificação (quando implementar)
 - `cd android && ./gradlew clean build test` (ou `npm run verify:android`).
